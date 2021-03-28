@@ -74,7 +74,7 @@ def valid_aux_task_layer_list(aux_layer_ids, enc_num_layers):
     if sorted_list != valid:
         raise ValueError(
             "Provided list of layer ids for auxiliary task is incorrect. "
-            "IDs should be between [0, %d]" % (enc_num_layers - 1)
+            "IDs should be between [0, %d]" % enc_num_layers
         )
 
     return valid
