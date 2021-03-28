@@ -264,7 +264,7 @@ def add_auxiliary_task_arguments(group):
         "--aux-task-type",
         nargs="?",
         default=None,
-        choices=["default", "symm_kl_div", "both"],
+        choices=["default", "js_div", "both"],
         help="Type of auxiliary task.",
     )
     group.add_argument(
