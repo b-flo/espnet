@@ -58,7 +58,7 @@ class Reporter(chainer.Chain):
         loss_ctc,
         loss_lm,
         loss_aux_trans,
-        loss_aux_symm_kl,
+        loss_aux_js_div,
         cer,
         wer,
     ):
@@ -68,7 +68,7 @@ class Reporter(chainer.Chain):
         chainer.reporter.report({"loss_ctc": loss_ctc}, self)
         chainer.reporter.report({"loss_lm": loss_lm}, self)
         chainer.reporter.report({"loss_aux_trans": loss_aux_trans}, self)
-        chainer.reporter.report({"loss_aux_symm_kl": loss_aux_symm_kl}, self)
+        chainer.reporter.report({"loss_aux_js_div": loss_aux_js_div}, self)
         chainer.reporter.report({"cer": cer}, self)
         chainer.reporter.report({"wer": wer}, self)
 
@@ -343,7 +343,6 @@ class E2E(ASRInterface, torch.nn.Module):
 
             if self.use_aux_task:
                 self.auxiliary_task = AuxiliaryTask(
-                    decoder,
                     self.joint_network,
                     self.criterion,
                     args.aux_task_type,
@@ -427,11 +426,16 @@ class E2E(ASRInterface, torch.nn.Module):
         loss_trans = self.criterion(z, target, pred_len, target_len)
 
         if self.use_aux_task and aux_hs_pad is not None:
-            loss_aux_trans, loss_aux_symm_kl = self.auxiliary_task(
-                aux_hs_pad, pred_pad, z, target, pred_len, target_len
+            loss_aux_trans, loss_aux_js_div = self.auxiliary_task(
+                aux_hs_pad,
+                pred_pad.detach().clone(),
+                z.detach().clone(),
+                target,
+                pred_len,
+                target_len,
             )
         else:
-            loss_aux_trans, loss_aux_symm_kl = 0.0, 0.0
+            loss_aux_trans, loss_aux_js_div = 0.0, 0.0
 
         if self.use_aux_ctc:
             if "custom" in self.etype:
@@ -450,12 +454,7 @@ class E2E(ASRInterface, torch.nn.Module):
         else:
             loss_lm = 0.0
 
-        loss = (
-            loss_trans
-            + self.transducer_weight * (loss_aux_trans + loss_aux_symm_kl)
-            + loss_ctc
-            + loss_lm
-        )
+        loss = loss_trans + loss_aux_trans + loss_aux_js_div + loss_ctc + loss_lm
 
         self.loss = loss
         loss_data = float(loss)
@@ -473,7 +472,7 @@ class E2E(ASRInterface, torch.nn.Module):
                 float(loss_ctc),
                 float(loss_lm),
                 float(loss_aux_trans),
-                float(loss_aux_symm_kl),
+                float(loss_aux_js_div),
                 cer,
                 wer,
             )

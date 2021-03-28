@@ -1,14 +1,10 @@
 """Auxiliary task implementation for transducer models."""
 
-from itertools import chain
 from typing import List
 from typing import Tuple
-from typing import Union
 
 import torch
 import torch.nn.functional as F
-
-from espnet.nets.transducer_decoder_interface import TransducerDecoderInterface
 
 
 class AuxiliaryTask(torch.nn.Module):
@@ -16,7 +12,6 @@ class AuxiliaryTask(torch.nn.Module):
 
     def __init__(
         self,
-        decoder: Union[torch.nn.Module, TransducerDecoderInterface],
         joint_network: torch.nn.Module,
         rnnt_criterion: torch.nn.Module,
         aux_task_type: str,
@@ -27,7 +22,6 @@ class AuxiliaryTask(torch.nn.Module):
         """Auxiliary task initialization.
 
         Args:
-            decoder: Decoder module
             joint_network: Joint network module
             aux_task_type: Auxiliary task type
             aux_task_weight: Auxiliary task weight
@@ -45,8 +39,10 @@ class AuxiliaryTask(torch.nn.Module):
             torch.nn.Linear(joint_dim, joint_dim),
         )
 
-        self.decoder = decoder
         self.joint_network = joint_network
+
+        if aux_task_type in ["js_div", "both"]:
+            self.kl_div = torch.nn.KLDivLoss(reduction="batchmean")
 
         self.aux_task_type = aux_task_type
         self.aux_task_weight = aux_task_weight
@@ -71,13 +67,13 @@ class AuxiliaryTask(torch.nn.Module):
             target_len: Target lengths
 
         Returns:
-            : (Weighted auxiliary transducer loss, Weighted auxiliary symmetric KL loss)
+            : (Weighted auxiliary transducer loss, weighted auxiliary symmetric KL loss)
 
         """
-        aux_trans = 0
-        aux_symm_kl = 0
+        aux_trans = 0.0
+        aux_js_div = 0.0
 
-        for p in chain(self.decoder.parameters(), self.joint_network.parameters()):
+        for p in self.joint_network.parameters():
             p.requires_grad = False
 
         for i, enc_aux in enumerate(enc_out_aux):
@@ -89,7 +85,7 @@ class AuxiliaryTask(torch.nn.Module):
                 is_aux=True,
             )
 
-            if self.aux_task_type != "symm_kl_div":
+            if self.aux_task_type in ["default", "both"]:
                 aux_trans += self.rnnt_criterion(
                     aux_joint,
                     target,
@@ -97,18 +93,21 @@ class AuxiliaryTask(torch.nn.Module):
                     target_len,
                 )
 
-            if self.aux_task_type != "default":
-                aux_symm_kl += F.kl_div(
-                    F.log_softmax(main_joint, dim=-1),
-                    F.softmax(aux_joint, dim=-1),
-                    reduction="mean",
-                ) + F.kl_div(
-                    F.log_softmax(aux_joint, dim=-1),
-                    F.softmax(main_joint, dim=-1),
-                    reduction="mean",
+            if self.aux_task_type in ["js_div", "both"]:
+                M = 0.5 * (main_joint + aux_joint)
+
+                aux_js_div += 0.5 * (
+                    self.kl_div(
+                        F.log_softmax(main_joint, dim=-1),
+                        F.softmax(M, dim=-1),
+                    )
+                    + self.kl_div(
+                        F.log_softmax(aux_joint, dim=-1),
+                        F.softmax(M, dim=-1),
+                    )
                 )
 
-        for p in chain(self.decoder.parameters(), self.joint_network.parameters()):
+        for p in self.joint_network.parameters():
             p.requires_grad = True
 
-        return self.aux_task_weight * aux_trans, self.aux_task_weight * aux_symm_kl
+        return self.aux_task_weight * aux_trans, self.aux_task_weight * aux_js_div
