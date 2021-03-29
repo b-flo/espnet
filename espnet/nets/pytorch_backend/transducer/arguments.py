@@ -271,13 +271,19 @@ def add_auxiliary_task_arguments(group):
         "--aux-task-layer-list",
         default=None,
         type=ast.literal_eval,
-        help="List of layers to use for auxiliary task.",
+        help="List of layers to use for auxiliaries tasks.",
     )
     group.add_argument(
-        "--aux-task-weight",
+        "--aux-trans-weight",
         default=0.3,
         type=float,
-        help="Weight of auxiliary task loss.",
+        help="Weight of auxiliary transducer loss.",
+    )
+    group.add_argument(
+        "--aux-js-div-weight",
+        default=0.5,
+        type=float,
+        help="Weight of auxiliary JS div loss.",
     )
     group.add_argument(
         "--aux-ctc",
