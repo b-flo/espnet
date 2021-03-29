@@ -3,6 +3,7 @@
 from argparse import Namespace
 from collections import Counter
 from dataclasses import asdict
+import copy
 import logging
 import math
 import numpy
@@ -343,10 +344,11 @@ class E2E(ASRInterface, torch.nn.Module):
 
             if self.use_aux_task:
                 self.auxiliary_task = AuxiliaryTask(
-                    self.joint_network,
+                    copy.deepcopy(self.joint_network),
                     self.criterion,
                     args.aux_task_type,
-                    args.aux_task_weight,
+                    args.aux_trans_weight,
+                    args.aux_js_div_weight,
                     encoder_out,
                     args.joint_dim,
                 )

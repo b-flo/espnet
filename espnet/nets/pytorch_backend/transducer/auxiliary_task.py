@@ -15,7 +15,8 @@ class AuxiliaryTask(torch.nn.Module):
         joint_network: torch.nn.Module,
         rnnt_criterion: torch.nn.Module,
         aux_task_type: str,
-        aux_task_weight: int,
+        aux_trans_weight: float,
+        aux_js_div_weight: float,
         encoder_out_dim: int,
         joint_dim: int,
     ):
@@ -42,10 +43,11 @@ class AuxiliaryTask(torch.nn.Module):
         self.joint_network = joint_network
 
         if aux_task_type in ["js_div", "both"]:
-            self.kl_div = torch.nn.KLDivLoss(reduction="batchmean")
+            self.kl_div = torch.nn.KLDivLoss(reduction="mean")
 
         self.aux_task_type = aux_task_type
-        self.aux_task_weight = aux_task_weight
+        self.aux_trans_weight = aux_trans_weight
+        self.aux_js_div_weight = aux_js_div_weight
 
     def forward(
         self,
@@ -72,9 +74,6 @@ class AuxiliaryTask(torch.nn.Module):
         """
         aux_trans = 0.0
         aux_js_div = 0.0
-
-        for p in self.joint_network.parameters():
-            p.requires_grad = False
 
         for i, enc_aux in enumerate(enc_out_aux):
             aux_mlp = self.mlp_net(enc_aux)
@@ -107,7 +106,7 @@ class AuxiliaryTask(torch.nn.Module):
                     )
                 )
 
-        for p in self.joint_network.parameters():
-            p.requires_grad = True
-
-        return self.aux_task_weight * aux_trans, self.aux_task_weight * aux_js_div
+        return (
+            (self.aux_trans_weight * aux_trans),
+            (self.aux_js_div_weight * aux_js_div),
+        )
