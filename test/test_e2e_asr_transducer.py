@@ -40,7 +40,8 @@ def get_default_train_args(**kwargs):
         joint_activation_type="tanh",
         transducer_weight=1.0,
         aux_task_type=None,
-        aux_task_weight=0.1,
+        aux_trans_weight=0.1,
+        aux_js_div_weight=0.1,
         aux_task_layer_list=[],
         aux_ctc=False,
         aux_ctc_weight=1.0,
@@ -313,7 +314,7 @@ def test_calculate_plot_attention():
         {
             "etype": "vggblstm",
             "elayers": 3,
-            "aux_task_type": "symm_kl_div",
+            "aux_task_type": "js_div",
             "aux_task_layer_list": [0, 1],
         },
         {
