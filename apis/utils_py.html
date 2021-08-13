@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>python utility tools &mdash; ESPnet 0.10.0 documentation</title>
+  <title>python utility tools &mdash; ESPnet 0.10.2a1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <script type="text/javascript" src="../_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
     
     <script type="text/javascript" src="../_static/js/theme.js"></script>
 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.10.0
+                0.10.2a1
               </div>
             
           
@@ -1680,7 +1680,7 @@
 </dd>
 <dt><kbd>out</kbd></dt>
 <dd><p>The output filename. If omitted, then output to sys.stdout</p>
-<p>Default: &lt;encodings.utf_8.StreamWriter object at 0x7fdafec32d90&gt;</p>
+<p>Default: &lt;encodings.utf_8.StreamWriter object at 0x7ff4f4855a00&gt;</p>
 </dd>
 </dl>
 </div>
@@ -1719,7 +1719,7 @@
 </dd>
 <dt><kbd>--out</kbd></dt>
 <dd><p>The output filename. If omitted, then output to sys.stdout</p>
-<p>Default: &lt;encodings.utf_8.StreamWriter object at 0x7fdafec32d90&gt;</p>
+<p>Default: &lt;encodings.utf_8.StreamWriter object at 0x7ff4f4855a00&gt;</p>
 </dd>
 </dl>
 </div>
@@ -1867,10 +1867,10 @@ sil t er n ih sil t ih v sil”</p>
 <h3>Positional Arguments<a class="headerlink" href="#Positional Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>rspecifier</kbd></dt>
-<dd><p>WAV scp file</p>
+<dd><p>WAV scp file.</p>
 </dd>
 <dt><kbd>wspecifier</kbd></dt>
-<dd><p>Segments file</p>
+<dd><p>Segments file.</p>
 </dd>
 </dl>
 </div>
@@ -1878,35 +1878,34 @@ sil t er n ih sil t ih v sil”</p>
 <h3>Named Arguments<a class="headerlink" href="#Named Arguments" title="Permalink to this headline">¶</a></h3>
 <dl class="option-list">
 <dt><kbd>--fs</kbd></dt>
-<dd><p>Sampling frequency</p>
+<dd><p>Sampling frequency.</p>
 </dd>
 <dt><kbd>--threshold</kbd></dt>
-<dd><p>Threshold in decibels</p>
+<dd><p>Threshold in decibels.</p>
 <p>Default: 60</p>
 </dd>
 <dt><kbd>--win_length</kbd></dt>
-<dd><p>Analisys window length in point</p>
-<p>Default: 1024</p>
+<dd><p>Analisys window length in point.</p>
+<p>Default: 1200</p>
 </dd>
 <dt><kbd>--shift_length</kbd></dt>
-<dd><p>Shift length in point</p>
-<p>Default: 256</p>
+<dd><p>Shift length in point.</p>
+<p>Default: 300</p>
 </dd>
 <dt><kbd>--min_silence</kbd></dt>
-<dd><p>minimum silence length</p>
+<dd><p>Minimum silence length in sec.</p>
 <p>Default: 0.01</p>
 </dd>
 <dt><kbd>--figdir</kbd></dt>
-<dd><p>Directory to save figures</p>
-<p>Default: “figs”</p>
+<dd><p>Directory to save figures.</p>
 </dd>
-<dt><kbd>--verbose, -V</kbd></dt>
-<dd><p>Verbose option</p>
+<dt><kbd>--verbose</kbd></dt>
+<dd><p>Verbosity level.</p>
 <p>Default: 0</p>
 </dd>
 <dt><kbd>--normalize</kbd></dt>
 <dd><p>Possible choices: 1, 16, 24, 32</p>
-<p>Give the bit depth of the PCM, then normalizes data to scale in [-1,1]</p>
+<p>Give the bit depth of the PCM, then normalizes data to scale in [-1,1].</p>
 </dd>
 </dl>
 </div>

@@ -7,7 +7,7 @@
   
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   
-  <title>Task class and data input system for training &mdash; ESPnet 0.10.0 documentation</title>
+  <title>Task class and data input system for training &mdash; ESPnet 0.10.2a1 documentation</title>
   
 
   
@@ -35,7 +35,7 @@
         <script type="text/javascript" src="_static/language_data.js"></script>
         <script crossorigin="anonymous" integrity="sha256-Ae2Vz/4ePdIu6ZyI/5ZGsYnb+m0JlOmKPjt6XZ9JJkA=" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"></script>
         <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
-        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "document", "processClass": "math|output_area"}})</script>
+        <script type="text/x-mathjax-config">MathJax.Hub.Config({"tex2jax": {"inlineMath": [["$", "$"], ["\\(", "\\)"]], "processEscapes": true, "ignoreClass": "tex2jax_ignore|mathjax_ignore|document", "processClass": "tex2jax_process|mathjax_process|math|output_area"}})</script>
     
     <script type="text/javascript" src="_static/js/theme.js"></script>
 
@@ -67,7 +67,7 @@
             
             
               <div class="version">
-                0.10.0
+                0.10.2a1
               </div>
             
           
@@ -304,7 +304,7 @@ To build your task, only you have to do is just inheriting <code class="docutils
 <div class="section" id="data-input-system">
 <h2>Data input system<a class="headerlink" href="#data-input-system" title="Permalink to this headline">¶</a></h2>
 <p>Espnet2 also provides a command line interface to describe the training corpus.
-On the contrary, unlike <code class="docutils literal notranslate"><span class="pre">fairseq</span></code> or training system such as <code class="docutils literal notranslate"><span class="pre">pytorch-lightining</span></code>,
+On the contrary, unlike <code class="docutils literal notranslate"><span class="pre">fairseq</span></code> or training system such as <code class="docutils literal notranslate"><span class="pre">pytorch-lightning</span></code>,
 our <code class="docutils literal notranslate"><span class="pre">Task</span></code> class doesn’t have an interface for building the dataset explicitly.
 This is because we aim at the task related to speech/text only,
 so we don’t need such general system so far.</p>
