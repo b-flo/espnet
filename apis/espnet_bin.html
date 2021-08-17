@@ -136,6 +136,7 @@
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.iterators.html">espnet2.iterators package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.lm.html">espnet2.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.schedulers.html">espnet2.schedulers package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.gan_tts.html">espnet2.gan_tts package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.torch_utils.html">espnet2.torch_utils package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.enh.html">espnet2.enh package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../_gen/espnet2.optimizers.html">espnet2.optimizers package</a></li>
@@ -652,7 +653,9 @@
 <dt><kbd>--maxlenratio</kbd></dt>
 <dd><dl class="simple">
 <dt>Input length ratio to obtain max output length.</dt><dd><p>If maxlenratio=0.0 (default), it uses a end-detect function
-to automatically find maximum hypothesis lengths</p>
+to automatically find maximum hypothesis lengths.
+If maxlenratio&lt;0.0, its absolute value is interpreted
+as a constant max output length</p>
 </dd>
 </dl>
 <p>Default: 0.0</p>

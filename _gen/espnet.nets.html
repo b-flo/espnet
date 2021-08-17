@@ -285,6 +285,7 @@
 <li class="toctree-l1"><a class="reference internal" href="espnet2.iterators.html">espnet2.iterators package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.lm.html">espnet2.lm package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.schedulers.html">espnet2.schedulers package</a></li>
+<li class="toctree-l1"><a class="reference internal" href="espnet2.gan_tts.html">espnet2.gan_tts package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.torch_utils.html">espnet2.torch_utils package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.enh.html">espnet2.enh package</a></li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.optimizers.html">espnet2.optimizers package</a></li>
@@ -1896,7 +1897,9 @@ Their shapes are <cite>(self.beam_size,)</cite></p>
 <li><p><strong>x</strong> (<em>torch.Tensor</em>) – Encoded speech feature (T, D)</p></li>
 <li><p><strong>maxlenratio</strong> (<em>float</em>) – Input length ratio to obtain max output length.
 If maxlenratio=0.0 (default), it uses a end-detect function
-to automatically find maximum hypothesis lengths</p></li>
+to automatically find maximum hypothesis lengths
+If maxlenratio&lt;0.0, its absolute value is interpreted
+as a constant max output length.</p></li>
 <li><p><strong>minlenratio</strong> (<em>float</em>) – Input length ratio to obtain min output length.</p></li>
 </ul>
 </dd>
