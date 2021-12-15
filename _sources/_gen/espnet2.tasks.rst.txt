@@ -4,23 +4,12 @@ espnet2.tasks package
 
 
 
-.. _espnet2.tasks.enh_asr:
+.. _espnet2.tasks.gan_tts:
 
-espnet2.tasks.enh_asr
+espnet2.tasks.gan_tts
 ---------------------
 
-.. automodule:: espnet2.tasks.enh_asr
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-.. _espnet2.tasks.__init__:
-
-espnet2.tasks.__init__
-----------------------
-
-.. automodule:: espnet2.tasks.__init__
+.. automodule:: espnet2.tasks.gan_tts
     :members:
     :undoc-members:
     :show-inheritance:
@@ -48,34 +37,45 @@ espnet2.tasks.abs_task
     :show-inheritance:
 
 
+.. _espnet2.tasks.__init__:
+
+espnet2.tasks.__init__
+----------------------
+
+.. automodule:: espnet2.tasks.__init__
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.tasks.tts:
+
+espnet2.tasks.tts
+-----------------
+
+.. automodule:: espnet2.tasks.tts
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.tasks.enh_asr:
+
+espnet2.tasks.enh_asr
+---------------------
+
+.. automodule:: espnet2.tasks.enh_asr
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 .. _espnet2.tasks.lm:
 
 espnet2.tasks.lm
 ----------------
 
 .. automodule:: espnet2.tasks.lm
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-.. _espnet2.tasks.asr:
-
-espnet2.tasks.asr
------------------
-
-.. automodule:: espnet2.tasks.asr
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-.. _espnet2.tasks.gan_tts:
-
-espnet2.tasks.gan_tts
----------------------
-
-.. automodule:: espnet2.tasks.gan_tts
     :members:
     :undoc-members:
     :show-inheritance:
@@ -103,12 +103,12 @@ espnet2.tasks.enh
     :show-inheritance:
 
 
-.. _espnet2.tasks.tts:
+.. _espnet2.tasks.asr:
 
-espnet2.tasks.tts
+espnet2.tasks.asr
 -----------------
 
-.. automodule:: espnet2.tasks.tts
+.. automodule:: espnet2.tasks.asr
     :members:
     :undoc-members:
     :show-inheritance:
