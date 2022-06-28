@@ -4,12 +4,12 @@ espnet.optimizer package
 Initialize sub package.
 
 
-.. _espnet.optimizer.pytorch:
+.. _espnet.optimizer.chainer:
 
-espnet.optimizer.pytorch
+espnet.optimizer.chainer
 ------------------------
 
-.. automodule:: espnet.optimizer.pytorch
+.. automodule:: espnet.optimizer.chainer
     :members:
     :undoc-members:
     :show-inheritance:
@@ -37,12 +37,12 @@ espnet.optimizer.__init__
     :show-inheritance:
 
 
-.. _espnet.optimizer.chainer:
+.. _espnet.optimizer.pytorch:
 
-espnet.optimizer.chainer
+espnet.optimizer.pytorch
 ------------------------
 
-.. automodule:: espnet.optimizer.chainer
+.. automodule:: espnet.optimizer.pytorch
     :members:
     :undoc-members:
     :show-inheritance:
