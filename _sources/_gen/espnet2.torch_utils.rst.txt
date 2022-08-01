@@ -113,3 +113,14 @@ espnet2.torch_utils.add_gradient_noise
     :undoc-members:
     :show-inheritance:
 
+
+.. _espnet2.torch_utils.get_layer_from_string:
+
+espnet2.torch_utils.get_layer_from_string
+-----------------------------------------
+
+.. automodule:: espnet2.torch_utils.get_layer_from_string
+    :members:
+    :undoc-members:
+    :show-inheritance:
+

@@ -213,6 +213,17 @@ espnet2.enh.separator.dpcl_separator
     :show-inheritance:
 
 
+.. _espnet2.enh.separator.ineube_separator:
+
+espnet2.enh.separator.ineube_separator
+--------------------------------------
+
+.. automodule:: espnet2.enh.separator.ineube_separator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 .. _espnet2.enh.separator.fasnet_separator:
 
 espnet2.enh.separator.fasnet_separator
@@ -395,6 +406,17 @@ espnet2.enh.layers.beamformer
 -----------------------------
 
 .. automodule:: espnet2.enh.layers.beamformer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.enh.layers.tcndenseunet:
+
+espnet2.enh.layers.tcndenseunet
+-------------------------------
+
+.. automodule:: espnet2.enh.layers.tcndenseunet
     :members:
     :undoc-members:
     :show-inheritance:

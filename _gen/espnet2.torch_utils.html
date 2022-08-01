@@ -113,6 +113,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#espnet2-torch-utils-initialize">espnet2.torch_utils.initialize</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#espnet2-torch-utils-init">espnet2.torch_utils.__init__</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#espnet2-torch-utils-add-gradient-noise">espnet2.torch_utils.add_gradient_noise</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#espnet2-torch-utils-get-layer-from-string">espnet2.torch_utils.get_layer_from_string</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="espnet2.fileio.html">espnet2.fileio package</a></li>
@@ -416,6 +417,31 @@ the interval of the <cite>sigma</cite> change.</p></li>
 <li><p><strong>eta</strong> – {0.01, 0.3, 1.0}: The magnitude of <cite>sigma</cite>.</p></li>
 <li><p><strong>scale_factor</strong> – {0.55}: The scale of <cite>sigma</cite>.</p></li>
 </ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="espnet2-torch-utils-get-layer-from-string">
+<span id="id11"></span><h2>espnet2.torch_utils.get_layer_from_string<a class="headerlink" href="#espnet2-torch-utils-get-layer-from-string" title="Permalink to this headline">¶</a></h2>
+<span class="target" id="module-espnet2.torch_utils.get_layer_from_string"></span><dl class="function">
+<dt id="espnet2.torch_utils.get_layer_from_string.get_layer">
+<code class="sig-prename descclassname">espnet2.torch_utils.get_layer_from_string.</code><code class="sig-name descname">get_layer</code><span class="sig-paren">(</span><em class="sig-param">l_name</em>, <em class="sig-param">library=&lt;module 'torch.nn' from '/home/runner/work/espnet/espnet/tools/venv/lib/python3.8/site-packages/torch/nn/__init__.py'&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/espnet2/torch_utils/get_layer_from_string.html#get_layer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.torch_utils.get_layer_from_string.get_layer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return layer object handler from library e.g. from torch.nn</p>
+<p>E.g. if l_name==”elu”, returns torch.nn.ELU.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters</dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>l_name</strong> (<em>string</em>) – Case insensitive name for layer in library (e.g. .’elu’).</p></li>
+<li><p><strong>library</strong> (<em>module</em>) – Name of library/module where to search for object handler</p></li>
+<li><p><strong>l_name e.g. &quot;torch.nn&quot;.</strong> (<em>with</em>) – </p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns</dt>
+<dd class="field-even"><p>handler for the requested layer e.g. (torch.nn.ELU)</p>
+</dd>
+<dt class="field-odd">Return type</dt>
+<dd class="field-odd"><p>layer_handler (object)</p>
 </dd>
 </dl>
 </dd></dl>
