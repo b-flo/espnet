@@ -4,7 +4,7 @@
   <meta charset="utf-8" /><meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>core tools (espnet2) &mdash; ESPnet 202205 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
+  <title>core tools (espnet2) &mdash; ESPnet 202207 documentation</title><link rel="stylesheet" href="../_static/css/theme.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
   <!--[if lt IE 9]>
     <script src="../_static/js/html5shiv.min.js"></script>
@@ -32,7 +32,7 @@
             <a href="../index.html" class="icon icon-home"> ESPnet
           </a>
               <div class="version">
-                202205
+                202207
               </div>
 <div role="search">
   <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
@@ -2376,6 +2376,8 @@ Input data related:
                     [--num_spk NUM_SPK] [--num_noise_type NUM_NOISE_TYPE]
                     [--sample_rate SAMPLE_RATE]
                     [--force_single_channel FORCE_SINGLE_CHANNEL]
+                    [--dynamic_mixing DYNAMIC_MIXING] [--utt2spk UTT2SPK]
+                    [--dynamic_mixing_gain_db DYNAMIC_MIXING_GAIN_DB]
                     [--encoder {stft,conv,same}] [--encoder_conf ENCODER_CONF]
                     [--separator {asteroid,conformer,dan,dc_crn,dccrn,dpcl,dpcl_e2e,dprnn,dptnet,fasnet,rnn,skim,svoice,tcn,transformer,wpe_beamformer,tcn_nomask,ineube}]
                     [--separator_conf SEPARATOR_CONF]
@@ -2734,6 +2736,11 @@ Optimizer related:
                         Sampling rate of the data (in Hz). (default: 8000)
   --force_single_channel FORCE_SINGLE_CHANNEL
                         Whether to force all data to be single-channel. (default: False)
+  --dynamic_mixing DYNAMIC_MIXING
+                        Apply dynamic mixing (default: False)
+  --utt2spk UTT2SPK     The file path of utt2spk file. Only used in dynamic_mixing mode. (default: None)
+  --dynamic_mixing_gain_db DYNAMIC_MIXING_GAIN_DB
+                        Random gain (in dB) for dynamic mixing sources (default: 0.0)
   --encoder {stft,conv,same}
                         The encoder type (default: stft)
   --encoder_conf ENCODER_CONF
