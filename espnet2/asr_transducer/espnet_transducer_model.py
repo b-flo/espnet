@@ -13,6 +13,7 @@ from espnet2.asr.specaug.abs_specaug import AbsSpecAug
 from espnet2.asr_transducer.decoder.abs_decoder import AbsDecoder
 from espnet2.asr_transducer.encoder.encoder import Encoder
 from espnet2.asr_transducer.joint_network import JointNetwork
+from espnet2.asr_transducer.textogram import Textogram
 from espnet2.asr_transducer.utils import get_transducer_task_io
 from espnet2.layers.abs_normalize import AbsNormalize
 from espnet2.torch_utils.device_funcs import force_gatherable
@@ -36,6 +37,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         frontend: Frontend module.
         specaug: SpecAugment module.
         normalize: Normalization module.
+        textogram: Textogram module.
         encoder: Encoder module.
         decoder: Decoder module.
         joint_network: Joint Network module.
@@ -61,6 +63,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         frontend: Optional[AbsFrontend],
         specaug: Optional[AbsSpecAug],
         normalize: Optional[AbsNormalize],
+        textogram: Optional[Textogram],
         encoder: Encoder,
         decoder: AbsDecoder,
         joint_network: JointNetwork,
@@ -93,6 +96,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self.frontend = frontend
         self.specaug = specaug
         self.normalize = normalize
+        self.textogram = textogram
 
         self.encoder = encoder
         self.decoder = decoder
@@ -158,7 +162,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         text = text[:, : text_lengths.max()]
 
         # 1. Encoder
-        encoder_out, encoder_out_lens = self.encode(speech, speech_lengths)
+        encoder_out, encoder_out_lens = self.encode(speech, speech_lengths, text)
 
         # 2. Transducer-related I/O preparation
         decoder_in, target, t_len, u_len = get_transducer_task_io(
@@ -187,7 +191,10 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         loss_ctc, loss_lm = 0.0, 0.0
 
-        if self.use_auxiliary_ctc:
+        if self.use_auxiliary_ctc and (
+            self.textogram is None
+            or (self.textogram is not None and not self.textogram.textogram_pass)
+        ):
             loss_ctc = self._calc_ctc_loss(
                 encoder_out,
                 target,
@@ -195,7 +202,10 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                 u_len,
             )
 
-        if self.use_auxiliary_lm_loss:
+        if self.use_auxiliary_lm_loss and (
+            self.textogram is None
+            or (self.textogram is not None and self.textogram.textogram_pass)
+        ):
             loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
@@ -258,12 +268,14 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self,
         speech: torch.Tensor,
         speech_lengths: torch.Tensor,
+        text: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encoder speech sequences.
 
         Args:
             speech: Speech sequences. (B, S)
             speech_lengths: Speech sequences lengths. (B,)
+            text: Label ID sequences. (B, L)
 
         Return:
             encoder_out: Encoder outputs. (B, T, D_enc)
@@ -281,6 +293,9 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
             # 3. Normalization for feature: e.g. Global-CMVN, Utterance-CMVN
             if self.normalize is not None:
                 feats, feats_lengths = self.normalize(feats, feats_lengths)
+
+        if self.textogram is not None and self.training:
+            feats = self.textogram(feats, text)
 
         # 4. Forward encoder
         encoder_out, encoder_out_lens = self.encoder(feats, feats_lengths)

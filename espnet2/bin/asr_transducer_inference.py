@@ -337,6 +337,9 @@ class Speech2Text:
 
         feats, feats_length = self.apply_frontend(speech, is_final=is_final)
 
+        if self.asr_model.textogram is not None:
+            feats = self.asr_model.textogram.get_encoder_input(feats)
+
         enc_out = self.asr_model.encoder.chunk_forward(
             feats,
             feats_length,
@@ -371,6 +374,10 @@ class Speech2Text:
             speech = torch.tensor(speech)
 
         feats, feats_length = self.apply_frontend(speech)
+
+        if self.asr_model.textogram is not None:
+            feats = self.asr_model.textogram.inference(feats)
+
         enc_out, _ = self.asr_model.encoder(feats, feats_length)
 
         nbest_hyps = self.beam_search(enc_out[0])

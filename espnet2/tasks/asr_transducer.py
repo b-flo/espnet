@@ -19,6 +19,7 @@ from espnet2.asr_transducer.decoder.stateless_decoder import StatelessDecoder
 from espnet2.asr_transducer.encoder.encoder import Encoder
 from espnet2.asr_transducer.espnet_transducer_model import ESPnetASRTransducerModel
 from espnet2.asr_transducer.joint_network import JointNetwork
+from espnet2.asr_transducer.textogram import Textogram
 from espnet2.layers.abs_normalize import AbsNormalize
 from espnet2.layers.global_mvn import GlobalMVN
 from espnet2.layers.utterance_mvn import UtteranceMVN
@@ -30,7 +31,12 @@ from espnet2.train.preprocessor import CommonPreprocessor
 from espnet2.train.trainer import Trainer
 from espnet2.utils.get_default_kwargs import get_default_kwargs
 from espnet2.utils.nested_dict_action import NestedDictAction
-from espnet2.utils.types import float_or_none, int_or_none, str2bool, str_or_none
+from espnet2.utils.types import (
+    float_or_none,
+    int_or_none,
+    str2bool,
+    str_or_none,
+)
 
 frontend_choices = ClassChoices(
     name="frontend",
@@ -155,60 +161,73 @@ class ASRTransducerTask(AbsTask):
             default=None,
             help="The path of the sentencepiece model.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--non_linguistic_symbols",
             type=str_or_none,
             help="The 'non_linguistic_symbols' file path.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--cleaner",
             type=str_or_none,
             choices=[None, "tacotron", "jaconv", "vietnamese"],
             default=None,
             help="Text cleaner to use.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--g2p",
             type=str_or_none,
             choices=g2p_choices,
             default=None,
             help="g2p method to use if --token_type=phn.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--speech_volume_normalize",
             type=float_or_none,
             default=None,
             help="Normalization value for maximum amplitude scaling.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--rir_scp",
             type=str_or_none,
             default=None,
             help="The RIR SCP file path.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--rir_apply_prob",
             type=float,
             default=1.0,
             help="The probability of the applied RIR convolution.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--noise_scp",
             type=str_or_none,
             default=None,
             help="The path of noise SCP file.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--noise_apply_prob",
             type=float,
             default=1.0,
             help="The probability of the applied noise addition.",
         )
-        parser.add_argument(
+        group.add_argument(
             "--noise_db_range",
             type=str,
             default="13_15",
             help="The range of the noise decibel level.",
+        )
+        group = parser.add_argument_group(description="Textogram related.")
+        group.add_argument(
+            "--textogram",
+            type=str_or_none,
+            default=None,
+            help="Whether to use additional textogram features.",
+        )
+        group.add_argument(
+            "--textogram_conf",
+            action=NestedDictAction,
+            default=get_default_kwargs(ESPnetASRTransducerModel),
+            help="The keyword arguments for the textogram class.",
         )
 
         for class_choices in cls.class_choices_list:
@@ -379,11 +398,18 @@ class ASRTransducerTask(AbsTask):
         else:
             normalize = None
 
-        # 4. Encoder
+        # 4. Textogram
+        if args.textogram is not None:
+            textogram = Textogram(vocab_size, args.textogram, **args.textogram_conf)
+            input_size += vocab_size
+        else:
+            textogram = None
+
+        # 5. Encoder
         encoder = Encoder(input_size, **args.encoder_conf)
         encoder_output_size = encoder.output_size
 
-        # 5. Decoder
+        # 6. Decoder
         decoder_class = decoder_choices.get_class(args.decoder)
         decoder = decoder_class(
             vocab_size,
@@ -391,7 +417,7 @@ class ASRTransducerTask(AbsTask):
         )
         decoder_output_size = decoder.output_size
 
-        # 6. Joint Network
+        # 7. Joint Network
         joint_network = JointNetwork(
             vocab_size,
             encoder_output_size,
@@ -399,13 +425,14 @@ class ASRTransducerTask(AbsTask):
             **args.joint_network_conf,
         )
 
-        # 7. Build model
+        # 8. Build model
         model = ESPnetASRTransducerModel(
             vocab_size=vocab_size,
             token_list=token_list,
             frontend=frontend,
             specaug=specaug,
             normalize=normalize,
+            textogram=textogram,
             encoder=encoder,
             decoder=decoder,
             joint_network=joint_network,
