@@ -12,7 +12,7 @@ class Textogram(torch.nn.Module):
     Args:
         vocab_size: Size of the vocabulary (w/ EOS and blank included).
         textogram_mode: Whether to use "dual" modality or "text" only.
-        confusion_map: List of possible mapping for the vocabulary elements.
+        confusion_map: List of possible replacements for the vocabulary elements.
         duration_map: Expected duration for each element of the label sequence.
         duration_variance: Variance to compute duration map, if not provided.
         confusion_rate: Confusion rate.
@@ -31,7 +31,6 @@ class Textogram(torch.nn.Module):
         duration_variance: Optional[int] = 0.5,
         confusion_rate: float = 0.0,
         masking_rate: float = 0.0,
-        seed: int = 0,
         pad_id: int = 0,
         ignore_id: int = -1,
     ) -> None:
@@ -59,7 +58,7 @@ class Textogram(torch.nn.Module):
         feats: torch.Tensor,
         text: torch.Tensor,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
-        """TMP.
+        """Compute textogram features.
 
         Args:
             feats: Features sequences. (B, T, D_feats)

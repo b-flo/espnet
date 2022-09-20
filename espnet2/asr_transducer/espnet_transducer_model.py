@@ -191,22 +191,23 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         loss_ctc, loss_lm = 0.0, 0.0
 
-        if self.use_auxiliary_ctc and (
-            self.textogram is None
-            or (self.textogram is not None and not self.textogram.textogram_pass)
-        ):
-            loss_ctc = self._calc_ctc_loss(
-                encoder_out,
-                target,
-                t_len,
-                u_len,
-            )
+        if self.training:
+            if self.use_auxiliary_ctc and (
+                self.textogram is None
+                or (self.textogram is not None and not self.textogram.textogram_pass)
+            ):
+                loss_ctc = self._calc_ctc_loss(
+                    encoder_out,
+                    target,
+                    t_len,
+                    u_len,
+                )
 
-        if self.use_auxiliary_lm_loss and (
-            self.textogram is None
-            or (self.textogram is not None and self.textogram.textogram_pass)
-        ):
-            loss_lm = self._calc_lm_loss(decoder_out, target)
+            if self.use_auxiliary_lm_loss and (
+                self.textogram is None
+                or (self.textogram is not None and self.textogram.textogram_pass)
+            ):
+                loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
             self.transducer_weight * loss_trans
@@ -294,10 +295,14 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
             if self.normalize is not None:
                 feats, feats_lengths = self.normalize(feats, feats_lengths)
 
-        if self.textogram is not None and self.training:
-            feats = self.textogram(feats, text)
+        # 4. Add textogram features
+        if self.textogram is not None:
+            if self.training:
+                feats = self.textogram(feats, text)
+            else:
+                feats = self.textogram.get_encoder_input(feats)
 
-        # 4. Forward encoder
+        # 5. Forward encoder
         encoder_out, encoder_out_lens = self.encoder(feats, feats_lengths)
 
         assert encoder_out.size(0) == speech.size(0), (
