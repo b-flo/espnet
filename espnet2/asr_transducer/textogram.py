@@ -11,7 +11,7 @@ class Textogram(torch.nn.Module):
 
     Args:
         vocab_size: Size of the vocabulary (w/ EOS and blank included).
-        textogram_mode: Whether to use "dual" modality or "text" only.
+        mode: Whether to use "dual" modality or "text" only.
         confusion_map: List of possible replacements for the vocabulary elements.
         duration_map: Expected duration for each element of the label sequence.
         duration_variance: Variance to compute duration map, if not provided.
@@ -25,7 +25,7 @@ class Textogram(torch.nn.Module):
     def __init__(
         self,
         vocab_size: int,
-        textogram_mode: str,
+        mode: str,
         confusion_map: Optional[Dict[int, List[int]]] = None,
         duration_map: Optional[List[int]] = None,
         duration_variance: Optional[int] = 0.5,
@@ -50,8 +50,8 @@ class Textogram(torch.nn.Module):
         self.pad = torch.LongTensor([pad_id])
         self.ignore_id = ignore_id
 
-        self.text_only = (textogram_mode == "text")
-        self.textogram_pass = True if self.text_only else False
+        self.text_only = mode == "text"
+        self.compute_toogle = False if self.text_only else True
 
     def forward(
         self,
@@ -68,19 +68,48 @@ class Textogram(torch.nn.Module):
             feats: Features sequences. (B, T, D_feats + D_textogram)
 
         """
+        if self.compute_toggle:
+            textogram = None
+        else:
+            textogram = self.compute_textograms(feats, text)
+
+        feats = self.get_encoder_input(feats, textogram)
+
+        if not self.text_only:
+            self.compute_toggle = not self.compute_toggle
+
+        return feats
+
+    def compute_textograms(
+        self, feats: torch.Tensor, text: torch.Tensor
+    ) -> torch.Tensor:
+        """Compute textogram features.
+
+        Args:
+            feats: Features sequences. (B, T, D_feats)
+            text: Label ID sequences. (B, L)
+
+        Returns:
+            textogram: Textogram features. (B, T, D_vocab)
+
+        """
         device = feats.device
+        max_t = feats.size(1) - 1
 
         textogram = []
         text_unpad = [y[y != self.ignore_id] for y in text]
 
+        self.pad = self.pad.to(device=device)
+
         for t in text_unpad:
-            duration_map = torch.LongTensor(
-                self.get_duration_map(t.size(0), feats.size(1) - 1)
-            ).to(device=device)
+            if self.duration_map is None:
+                duration_map = self.compute_duration_map(t.size(0), max_t, device)
+            else:
+                raise NotImplementedError
 
             extended_t = self.apply_confusion(torch.repeat_interleave(t, duration_map))
 
-            textogram.append(torch.cat([self.pad.to(device=device), extended_t]))
+            textogram.append(torch.cat([self.pad, extended_t]))
 
         textogram = torch.nn.functional.one_hot(
             torch.stack(textogram), num_classes=self.vocab_size
@@ -89,25 +118,36 @@ class Textogram(torch.nn.Module):
         if self.masking_rate > 0:
             textogram = self.apply_label_masking(textogram)
 
-        feats = self.get_encoder_input(
-            feats, textogram if self.textogram_pass else None
-        )
-        self.switch_pass()
+        return textogram
 
-        return feats
-        
-    def switch_pass(self) -> None:
-        """Control the encoder input construction depending on the training pass."""
-        if not self.text_only:
-            self.textogram_pass = not self.textogram_pass
+    def get_encoder_input(
+        self, feats: torch.Tensor, textogram: Optional[torch.Tensor] = None
+    ) -> torch.Tensor:
+        """Get encoder input with Textogram dimensions filled with zeroes.
+
+        Args:
+            feats: Input features. (B, T, D_feats)
+            textogram: Textogram features. (B, T, D_vocab)
+
+        Returns:
+            : Encoder features. (B, T, D_feats + D_vocab)
+
+        """
+        if textogram is None:
+            b, t, d = feats.size()
+
+            return torch.cat((feats, feats.new_zeros((b, t, self.vocab_size))), -1)
+
+        return torch.cat((feats.new_zeros(feats.size()), textogram), -1)
 
     def apply_confusion(self, x: torch.Tensor) -> torch.Tensor:
         """Apply confusion to the input tensor.
 
         A portion of the labels will be permuted according to a defined mapping,
-        where the portion is defined by 'confusion_rate'.
+        where the portion size is defined by 'confusion_rate'.
 
-        Note that only one-to-one label mapping is allowed for now.
+        Note: 1) Only one-to-one mapping is allowed.
+              2) Target label is selected randomly if there are multiple candidates.
 
         Args:
             x: Textogram sequence.
@@ -152,7 +192,9 @@ class Textogram(torch.nn.Module):
 
         return x
 
-    def get_duration_map(self, size: int, sum_d: int) -> List[int]:
+    def compute_duration_map(
+        self, size: int, sum_d: int, device: torch.device
+    ) -> List[int]:
         """Create a list of 'size' elements with pseudo-random values.
 
         1) The sum of the elements is equal to `sum_d`.
@@ -166,35 +208,14 @@ class Textogram(torch.nn.Module):
             duration_map: Duration map with defined constraints.
 
         """
-        if self.duration_map is not None:
-            return self.duration_map
-
         avg = sum_d / size
         div = [
             int((x + 1) * avg + random.random() * (avg * self.duration_variance / 2))
             for x in range(size - 1)
         ]
 
-        duration_map = [a - b for a, b in zip(div + [sum_d], [0] + div)]
+        duration_map = torch.LongTensor(
+            [a - b for a, b in zip(div + [sum_d], [0] + div)],
+        ).to(device=device)
 
         return duration_map
-
-    def get_encoder_input(
-        self, feats: torch.Tensor, textogram: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
-        """Get encoder input with Textogram dimensions filled with zeroes.
-
-        Args:
-            feats: Input features. (B, T, D_feats)
-            textogram: Textogram features. (B, T, D_vocab)
-
-        Returns:
-            x: Output features. (B, T, D_feats + D_vocab)
-
-        """
-        if textogram is None:
-            b, t, d = feats.size()
-
-            return torch.cat((feats, feats.new_zeros((b, t, self.vocab_size))), -1)
-
-        return torch.cat((feats.new_zeros(feats.size()), textogram), -1)

@@ -72,7 +72,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         auxiliary_ctc_weight: float = 0.0,
         auxiliary_ctc_dropout_rate: float = 0.0,
         auxiliary_lm_loss_weight: float = 0.0,
-        auxiliary_lm_loss_smoothing: float = 0.0,
+        auxiliary_lm_loss_smoothing: float = 0.05,
         ignore_id: int = -1,
         sym_space: str = "<space>",
         sym_blank: str = "<blank>",
@@ -85,7 +85,11 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         assert check_argument_types()
 
-        # The following labels ID are reserved: 0 (blank) and vocab_size - 1 (sos/eos)
+        # The following labels ID are reserved:
+        #     - 0: blank symbol.
+        #     - 1: unknown label symbol.
+        #     - 2: space symbol.
+        #     - vocab_size - 1: SOS/EOS symbol.
         self.vocab_size = vocab_size
         self.ignore_id = ignore_id
         self.token_list = token_list.copy()
@@ -106,7 +110,9 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self.error_calculator = None
 
         self.use_auxiliary_ctc = auxiliary_ctc_weight > 0
-        self.use_auxiliary_lm_loss = auxiliary_lm_loss_weight > 0
+        self.use_auxiliary_lm_loss = (
+            auxiliary_lm_loss_weight > 0 and self.textogram is not None
+        )
 
         if self.use_auxiliary_ctc:
             self.ctc_lin = torch.nn.Linear(encoder.output_size, vocab_size)
@@ -191,10 +197,9 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         loss_ctc, loss_lm = 0.0, 0.0
 
-        if self.training:
-            if self.use_auxiliary_ctc and (
-                self.textogram is None
-                or (self.textogram is not None and not self.textogram.textogram_pass)
+        if self.use_auxiliary_ctc and self.training:
+            if self.textogram is None or (
+                self.textogram is not None and not self.textogram.compute_toggle
             ):
                 loss_ctc = self._calc_ctc_loss(
                     encoder_out,
@@ -203,11 +208,8 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                     u_len,
                 )
 
-            if self.use_auxiliary_lm_loss and (
-                self.textogram is None
-                or (self.textogram is not None and self.textogram.textogram_pass)
-            ):
-                loss_lm = self._calc_lm_loss(decoder_out, target)
+        if self.use_auxiliary_lm_loss and self.textogram.compute_toggle:
+            loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
             self.transducer_weight * loss_trans
@@ -441,9 +443,8 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                 t_len,
                 u_len,
                 zero_infinity=True,
-                reduction="sum",
+                reduction="mean",
             )
-        loss_ctc /= target.size(0)
 
         return loss_ctc
 
@@ -451,37 +452,29 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self,
         decoder_out: torch.Tensor,
         target: torch.Tensor,
+        eps: float = 1e-6,
     ) -> torch.Tensor:
         """Compute LM loss.
 
         Args:
             decoder_out: Decoder output sequences. (B, U, D_dec)
             target: Target label ID sequences. (B, L)
+            eps: Epsilon value to avoid zero values.
 
         Return:
             loss_lm: LM loss value.
 
         """
-        lm_loss_in = self.lm_lin(decoder_out[:, :-1, :]).view(-1, self.vocab_size)
-        lm_target = target.view(-1).type(torch.int64)
+        logp = torch.log_softmax(self.lm_lin(decoder_out[:, :-1, :]), dim=-1)
+        target = target.type(torch.int64)
+        mask = (target != 0).to(logp.dtype)
 
-        with torch.no_grad():
-            true_dist = lm_loss_in.clone()
-            true_dist.fill_(self.lm_loss_smoothing / (self.vocab_size - 1))
+        smoothing = self.vocab_size * self.lm_loss_smoothing / (self.vocab_size - 1)
+        target_logp = logp.gather(2, target.unsqueeze(2)).squeeze(2)
+        smooth_logp = logp.mean(dim=-1)
 
-            # Ignore blank ID (0)
-            ignore = lm_target == 0
-            lm_target = lm_target.masked_fill(ignore, 0)
+        neg_log_ll = (1.0 - smoothing) * target_logp + smoothing * smooth_logp
 
-            true_dist.scatter_(1, lm_target.unsqueeze(1), (1 - self.lm_loss_smoothing))
-
-        loss_lm = torch.nn.functional.kl_div(
-            torch.log_softmax(lm_loss_in, dim=1),
-            true_dist,
-            reduction="none",
-        )
-        loss_lm = loss_lm.masked_fill(ignore.unsqueeze(1), 0).sum() / decoder_out.size(
-            0
-        )
+        loss_lm = -torch.sum(neg_log_ll * mask) / mask.sum() + eps
 
         return loss_lm
