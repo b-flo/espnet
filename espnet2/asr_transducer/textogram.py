@@ -17,8 +17,8 @@ class Textogram(torch.nn.Module):
         duration_variance: Variance to compute duration map, if not provided.
         confusion_rate: Confusion rate.
         masking_rate: Label masking rate.
-        pad_id: Padding ID (corresponding to blank symbol).
-        ignore_id: Initial padding ID to ignore.
+        pad_id: Padding symbol ID (equivalent to the blank symbol ID).
+        ignore_id: Initial padding symbol ID to ignore.
 
     """
 
@@ -28,7 +28,7 @@ class Textogram(torch.nn.Module):
         mode: str,
         confusion_map: Optional[Dict[int, List[int]]] = None,
         duration_map: Optional[List[int]] = None,
-        duration_variance: Optional[int] = 0.5,
+        duration_variance: float = 0.5,
         confusion_rate: float = 0.0,
         masking_rate: float = 0.0,
         pad_id: int = 0,
@@ -107,7 +107,10 @@ class Textogram(torch.nn.Module):
             else:
                 raise NotImplementedError
 
-            extended_t = self.apply_confusion(torch.repeat_interleave(t, duration_map))
+            extended_t = torch.repeat_interleave(t, duration_map)
+
+            if self.confusion_map is not None:
+                extended_t = self.apply_confusion(extended_t)
 
             textogram.append(torch.cat([self.pad, extended_t]))
 
@@ -156,9 +159,6 @@ class Textogram(torch.nn.Module):
             x: Confused textogram sequence.
 
         """
-        if self.confusion_map is None:
-            return x
-
         p_max = int(
             sum(c in self.confusion_map.keys() for c in x.tolist())
             * self.confusion_rate

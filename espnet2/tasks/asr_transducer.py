@@ -396,7 +396,7 @@ class ASRTransducerTask(AbsTask):
         # 4. Textogram
         if args.textogram is not None:
             textogram = Textogram(vocab_size, args.textogram, **args.textogram_conf)
-            input_size += vocab_size
+            input_size += textogram.vocab_size
         else:
             textogram = None
 

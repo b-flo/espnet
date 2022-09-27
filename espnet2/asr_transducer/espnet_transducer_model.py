@@ -208,7 +208,11 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                     u_len,
                 )
 
-        if self.use_auxiliary_lm_loss and self.textogram.compute_toggle:
+        if (
+            self.use_auxiliary_lm_loss
+            and self.training
+            and self.textogram.compute_toggle
+        ):
             loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
@@ -454,7 +458,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         target: torch.Tensor,
         eps: float = 1e-6,
     ) -> torch.Tensor:
-        """Compute LM loss.
+        """Compute LM loss (i.e.: cross-entropy with smoothing).
 
         Args:
             decoder_out: Decoder output sequences. (B, U, D_dec)
