@@ -338,7 +338,7 @@ class Speech2Text:
         feats, feats_length = self.apply_frontend(speech, is_final=is_final)
 
         if self.asr_model.textogram is not None:
-            feats = self.asr_model.textogram.get_encoder_input(feats)
+            feats = self.asr_model.textogram.get_feats_w_null_textogram(feats)
 
         enc_out = self.asr_model.encoder.chunk_forward(
             feats,

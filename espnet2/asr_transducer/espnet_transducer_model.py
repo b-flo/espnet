@@ -109,10 +109,9 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self.criterion_transducer = None
         self.error_calculator = None
 
+        self.use_textogram = self.textogram is not None
         self.use_auxiliary_ctc = auxiliary_ctc_weight > 0
-        self.use_auxiliary_lm_loss = (
-            auxiliary_lm_loss_weight > 0 and self.textogram is not None
-        )
+        self.use_auxiliary_lm_loss = auxiliary_lm_loss_weight > 0
 
         if self.use_auxiliary_ctc:
             self.ctc_lin = torch.nn.Linear(encoder.output_size, vocab_size)
@@ -121,6 +120,10 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         if self.use_auxiliary_lm_loss:
             self.lm_lin = torch.nn.Linear(decoder.output_size, vocab_size)
             self.lm_loss_smoothing = auxiliary_lm_loss_smoothing
+
+        if self.use_textogram:
+            self.only_textogram = self.textogram.text_only
+            self.epoch_seen_batches = []
 
         self.transducer_weight = transducer_weight
         self.fastemit_lambda = fastemit_lambda
@@ -168,7 +171,9 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         text = text[:, : text_lengths.max()]
 
         # 1. Encoder
-        encoder_out, encoder_out_lens = self.encode(speech, speech_lengths, text)
+        encoder_out, encoder_out_lens = self.encode(
+            speech, speech_lengths, text, kwargs["utt_id"]
+        )
 
         # 2. Transducer-related I/O preparation
         decoder_in, target, t_len, u_len = get_transducer_task_io(
@@ -198,21 +203,14 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         loss_ctc, loss_lm = 0.0, 0.0
 
         if self.use_auxiliary_ctc and self.training:
-            if self.textogram is None or (
-                self.textogram is not None and not self.textogram.compute_toggle
-            ):
-                loss_ctc = self._calc_ctc_loss(
-                    encoder_out,
-                    target,
-                    t_len,
-                    u_len,
-                )
+            loss_ctc = self._calc_ctc_loss(
+                encoder_out,
+                target,
+                t_len,
+                u_len,
+            )
 
-        if (
-            self.use_auxiliary_lm_loss
-            and self.training
-            and self.textogram.compute_toggle
-        ):
+        if self.use_auxiliary_lm_loss and self.training:
             loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
@@ -276,6 +274,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         speech: torch.Tensor,
         speech_lengths: torch.Tensor,
         text: torch.Tensor,
+        utts_id: Optional[List[str]] = None,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         """Encoder speech sequences.
 
@@ -302,11 +301,20 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                 feats, feats_lengths = self.normalize(feats, feats_lengths)
 
         # 4. Add textogram features
-        if self.textogram is not None:
+        if self.use_textogram:
+            _text = None
+
             if self.training:
-                feats = self.textogram(feats, text)
-            else:
-                feats = self.textogram.get_encoder_input(feats)
+                if self.only_textogram:
+                    _text = text
+                else:
+                    if utts_id in self.epoch_seen_batches:
+                        _text = text
+                        self.epoch_seen_batches.remove(utts_id)
+                    else:
+                        self.epoch_seen_batches.append(utts_id)
+
+            feats = self.textogram(feats, _text)
 
         # 5. Forward encoder
         encoder_out, encoder_out_lens = self.encoder(feats, feats_lengths)

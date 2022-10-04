@@ -1521,9 +1521,8 @@ class AbsTask(ABC):
         if iter_options.num_batches is not None:
             batches = batches[: iter_options.num_batches]
 
-        if mode == "train":
-            if hasattr(args, "textogram") and args.textogram == "dual":
-                batches = np.repeat(batches, 2).tolist()
+        if mode == "train" and hasattr(args, "textogram") and args.textogram == "dual":
+            batches = np.repeat(batches, 2).tolist()
 
         bs_list = [len(batch) for batch in batches]
 

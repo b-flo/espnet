@@ -1,7 +1,7 @@
 """Textogram module for Transducer model."""
 
 import random
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, List, Optional
 
 import torch
 
@@ -51,13 +51,12 @@ class Textogram(torch.nn.Module):
         self.ignore_id = ignore_id
 
         self.text_only = mode == "text"
-        self.compute_toogle = False if self.text_only else True
 
     def forward(
         self,
         feats: torch.Tensor,
-        text: torch.Tensor,
-    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        text: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
         """Compute textogram features.
 
         Args:
@@ -68,19 +67,14 @@ class Textogram(torch.nn.Module):
             feats: Features sequences. (B, T, D_feats + D_textogram)
 
         """
-        if self.compute_toggle:
-            textogram = None
-        else:
-            textogram = self.compute_textograms(feats, text)
+        if text is None:
+            return self.get_feats_w_null_textogram(feats)
 
-        feats = self.get_encoder_input(feats, textogram)
+        textogram = self.compute_textogram(feats, text)
 
-        if not self.text_only:
-            self.compute_toggle = not self.compute_toggle
+        return torch.cat((feats.new_zeros(feats.size()), textogram), -1)
 
-        return feats
-
-    def compute_textograms(
+    def compute_textogram(
         self, feats: torch.Tensor, text: torch.Tensor
     ) -> torch.Tensor:
         """Compute textogram features.
@@ -123,25 +117,19 @@ class Textogram(torch.nn.Module):
 
         return textogram
 
-    def get_encoder_input(
-        self, feats: torch.Tensor, textogram: Optional[torch.Tensor] = None
-    ) -> torch.Tensor:
-        """Get encoder input with Textogram dimensions filled with zeroes.
+    def get_feats_w_null_textogram(self, feats: torch.Tensor) -> torch.Tensor:
+        """Get features input matrix with textogram dimensions filled with zeroes.
 
         Args:
             feats: Input features. (B, T, D_feats)
-            textogram: Textogram features. (B, T, D_vocab)
 
         Returns:
-            : Encoder features. (B, T, D_feats + D_vocab)
+            : Augmented input features. (B, T, D_feats + D_vocab)
 
         """
-        if textogram is None:
-            b, t, d = feats.size()
+        b, t, d = feats.size()
 
-            return torch.cat((feats, feats.new_zeros((b, t, self.vocab_size))), -1)
-
-        return torch.cat((feats.new_zeros(feats.size()), textogram), -1)
+        return torch.cat((feats, feats.new_zeros((b, t, self.vocab_size))), -1)
 
     def apply_confusion(self, x: torch.Tensor) -> torch.Tensor:
         """Apply confusion to the input tensor.
