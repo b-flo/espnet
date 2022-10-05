@@ -119,7 +119,11 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         if self.use_auxiliary_lm_loss:
             self.lm_lin = torch.nn.Linear(decoder.output_size, vocab_size)
-            self.lm_loss_smoothing = auxiliary_lm_loss_smoothing
+
+            eps = auxiliary_lm_loss_smoothing / vocab_size
+
+            self.auxiliary_lm_loss_smooth_neg = eps
+            self.auxiliary_lm_loss_smooth_pos = (1 - auxiliary_lm_loss_smoothing) + eps
 
         if self.use_textogram:
             self.only_textogram = self.textogram.text_only
@@ -202,7 +206,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
 
         loss_ctc, loss_lm = 0.0, 0.0
 
-        if self.use_auxiliary_ctc and self.training:
+        if self.use_auxiliary_ctc:
             loss_ctc = self._calc_ctc_loss(
                 encoder_out,
                 target,
@@ -210,7 +214,7 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                 u_len,
             )
 
-        if self.use_auxiliary_lm_loss and self.training:
+        if self.use_auxiliary_lm_loss:
             loss_lm = self._calc_lm_loss(decoder_out, target)
 
         loss = (
@@ -455,8 +459,8 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
                 t_len,
                 u_len,
                 zero_infinity=True,
-                reduction="mean",
-            )
+                reduction="sum",
+            ) / encoder_out.size(0)
 
         return loss_ctc
 
@@ -464,7 +468,6 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
         self,
         decoder_out: torch.Tensor,
         target: torch.Tensor,
-        eps: float = 1e-6,
     ) -> torch.Tensor:
         """Compute LM loss (i.e.: cross-entropy with smoothing).
 
@@ -477,16 +480,18 @@ class ESPnetASRTransducerModel(AbsESPnetModel):
             loss_lm: LM loss value.
 
         """
-        logp = torch.log_softmax(self.lm_lin(decoder_out[:, :-1, :]), dim=-1)
-        target = target.type(torch.int64)
-        mask = (target != 0).to(logp.dtype)
+        logp = torch.log_softmax(
+            self.lm_lin(decoder_out[:, :-1, :]).view(-1, self.vocab_size), dim=1
+        )
+        target = target.view(-1).type(torch.int64)
 
-        smoothing = self.vocab_size * self.lm_loss_smoothing / (self.vocab_size - 1)
-        target_logp = logp.gather(2, target.unsqueeze(2)).squeeze(2)
-        smooth_logp = logp.mean(dim=-1)
+        with torch.no_grad():
+            true_dist = torch.zeros_like(logp).fill_(self.auxiliary_lm_loss_smooth_neg)
 
-        neg_log_ll = (1.0 - smoothing) * target_logp + smoothing * smooth_logp
+            true_dist.scatter_(
+                1, target.unsqueeze(1), self.auxiliary_lm_loss_smooth_pos
+            )
 
-        loss_lm = -torch.sum(neg_log_ll * mask) / mask.sum() + eps
+        loss_lm = torch.sum(-true_dist * logp, dim=1).sum() / decoder_out.size(0)
 
         return loss_lm
