@@ -171,8 +171,8 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../index.html" class="icon icon-home"></a> &raquo;</li>
-      <li>espnet2.text package</li>
+      <li><a href="../index.html" class="icon icon-home"></a></li>
+      <li class="breadcrumb-item active">espnet2.text package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/_gen/espnet2.text.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -241,7 +241,7 @@ As a workaround, g2p_en.G2p is instantiated upon calling this class.</p>
 
 <dl class="class">
 <dt id="espnet2.text.phoneme_tokenizer.G2pk">
-<em class="property">class </em><code class="sig-prename descclassname">espnet2.text.phoneme_tokenizer.</code><code class="sig-name descname">G2pk</code><span class="sig-paren">(</span><em class="sig-param">descritive=False</em>, <em class="sig-param">group_vowels=False</em>, <em class="sig-param">to_syl=False</em>, <em class="sig-param">no_space=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/espnet2/text/phoneme_tokenizer.html#G2pk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.text.phoneme_tokenizer.G2pk" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><code class="sig-prename descclassname">espnet2.text.phoneme_tokenizer.</code><code class="sig-name descname">G2pk</code><span class="sig-paren">(</span><em class="sig-param">descritive=False</em>, <em class="sig-param">group_vowels=False</em>, <em class="sig-param">to_syl=False</em>, <em class="sig-param">no_space=False</em>, <em class="sig-param">explicit_space=False</em>, <em class="sig-param">space_symbol='&lt;space&gt;'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/espnet2/text/phoneme_tokenizer.html#G2pk"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.text.phoneme_tokenizer.G2pk" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>On behalf of g2pk.G2p.</p>
 <p>g2pk.G2p isn’t pickalable and it can’t be copied to the other processes
@@ -385,6 +385,11 @@ sequence-to-sequence acoustic modeling for neural TTS</a> with some r9y9’s twe
 <dl class="function">
 <dt id="espnet2.text.phoneme_tokenizer.pypinyin_g2p_phone">
 <code class="sig-prename descclassname">espnet2.text.phoneme_tokenizer.</code><code class="sig-name descname">pypinyin_g2p_phone</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="../_modules/espnet2/text/phoneme_tokenizer.html#pypinyin_g2p_phone"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.text.phoneme_tokenizer.pypinyin_g2p_phone" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="espnet2.text.phoneme_tokenizer.pypinyin_g2p_phone_without_prosody">
+<code class="sig-prename descclassname">espnet2.text.phoneme_tokenizer.</code><code class="sig-name descname">pypinyin_g2p_phone_without_prosody</code><span class="sig-paren">(</span><em class="sig-param">text</em><span class="sig-paren">)</span> &#x2192; List[str]<a class="reference internal" href="../_modules/espnet2/text/phoneme_tokenizer.html#pypinyin_g2p_phone_without_prosody"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#espnet2.text.phoneme_tokenizer.pypinyin_g2p_phone_without_prosody" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">

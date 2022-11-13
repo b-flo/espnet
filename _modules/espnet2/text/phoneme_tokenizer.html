@@ -156,9 +156,9 @@
         <div class="rst-content">
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
-      <li><a href="../../../index.html" class="icon icon-home"></a> &raquo;</li>
-          <li><a href="../../index.html">Module code</a> &raquo;</li>
-      <li>espnet2.text.phoneme_tokenizer</li>
+      <li><a href="../../../index.html" class="icon icon-home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">espnet2.text.phoneme_tokenizer</li>
       <li class="wy-breadcrumbs-aside">
       </li>
   </ul>
@@ -191,6 +191,7 @@
     <span class="s2">&quot;pyopenjtalk_prosody&quot;</span><span class="p">,</span>
     <span class="s2">&quot;pypinyin_g2p&quot;</span><span class="p">,</span>
     <span class="s2">&quot;pypinyin_g2p_phone&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pypinyin_g2p_phone_without_prosody&quot;</span><span class="p">,</span>
     <span class="s2">&quot;espeak_ng_arabic&quot;</span><span class="p">,</span>
     <span class="s2">&quot;espeak_ng_german&quot;</span><span class="p">,</span>
     <span class="s2">&quot;espeak_ng_french&quot;</span><span class="p">,</span>
@@ -202,8 +203,12 @@
     <span class="s2">&quot;espeak_ng_dutch&quot;</span><span class="p">,</span>
     <span class="s2">&quot;espeak_ng_english_us_vits&quot;</span><span class="p">,</span>
     <span class="s2">&quot;espeak_ng_hindi&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;espeak_ng_italian&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;espeak_ng_ukrainian&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;espeak_ng_polish&quot;</span><span class="p">,</span>
     <span class="s2">&quot;g2pk&quot;</span><span class="p">,</span>
     <span class="s2">&quot;g2pk_no_space&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;g2pk_explicit_space&quot;</span><span class="p">,</span>
     <span class="s2">&quot;korean_jaso&quot;</span><span class="p">,</span>
     <span class="s2">&quot;korean_jaso_no_space&quot;</span><span class="p">,</span>
     <span class="s2">&quot;g2p_is&quot;</span><span class="p">,</span>
@@ -377,6 +382,27 @@
     <span class="k">return</span> <span class="n">phones</span></div>
 
 
+<div class="viewcode-block" id="pypinyin_g2p_phone_without_prosody"><a class="viewcode-back" href="../../../_gen/espnet2.text.html#espnet2.text.phoneme_tokenizer.pypinyin_g2p_phone_without_prosody">[docs]</a><span class="k">def</span> <span class="nf">pypinyin_g2p_phone_without_prosody</span><span class="p">(</span><span class="n">text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
+    <span class="kn">from</span> <span class="nn">pypinyin</span> <span class="kn">import</span> <span class="n">Style</span><span class="p">,</span> <span class="n">pinyin</span>
+    <span class="kn">from</span> <span class="nn">pypinyin.style._utils</span> <span class="kn">import</span> <span class="n">get_finals</span><span class="p">,</span> <span class="n">get_initials</span>
+
+    <span class="n">phones</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">phone</span> <span class="ow">in</span> <span class="n">pinyin</span><span class="p">(</span><span class="n">text</span><span class="p">,</span> <span class="n">style</span><span class="o">=</span><span class="n">Style</span><span class="o">.</span><span class="n">NORMAL</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">initial</span> <span class="o">=</span> <span class="n">get_initials</span><span class="p">(</span><span class="n">phone</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">final</span> <span class="o">=</span> <span class="n">get_finals</span><span class="p">(</span><span class="n">phone</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">phones</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">initial</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">initial</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;x&quot;</span><span class="p">,</span> <span class="s2">&quot;y&quot;</span><span class="p">,</span> <span class="s2">&quot;j&quot;</span><span class="p">,</span> <span class="s2">&quot;q&quot;</span><span class="p">]:</span>
+                <span class="k">if</span> <span class="n">final</span> <span class="o">==</span> <span class="s2">&quot;un&quot;</span><span class="p">:</span>
+                    <span class="n">final</span> <span class="o">=</span> <span class="s2">&quot;vn&quot;</span>
+                <span class="k">elif</span> <span class="n">final</span> <span class="o">==</span> <span class="s2">&quot;uan&quot;</span><span class="p">:</span>
+                    <span class="n">final</span> <span class="o">=</span> <span class="s2">&quot;van&quot;</span>
+            <span class="k">if</span> <span class="n">final</span> <span class="o">==</span> <span class="s2">&quot;ue&quot;</span><span class="p">:</span>
+                <span class="n">final</span> <span class="o">=</span> <span class="s2">&quot;ve&quot;</span>
+        <span class="n">phones</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">final</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">phones</span></div>
+
+
 <div class="viewcode-block" id="G2p_en"><a class="viewcode-back" href="../../../_gen/espnet2.text.html#espnet2.text.phoneme_tokenizer.G2p_en">[docs]</a><span class="k">class</span> <span class="nc">G2p_en</span><span class="p">:</span>
     <span class="sd">&quot;&quot;&quot;On behalf of g2p_en.G2p.</span>
 
@@ -411,12 +437,20 @@
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span> <span class="fm">__init__</span><span class="p">(</span>
-        <span class="bp">self</span><span class="p">,</span> <span class="n">descritive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">group_vowels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">to_syl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">no_space</span><span class="o">=</span><span class="kc">False</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">descritive</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">group_vowels</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">to_syl</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">no_space</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">explicit_space</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">space_symbol</span><span class="o">=</span><span class="s2">&quot;&lt;space&gt;&quot;</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">descritive</span> <span class="o">=</span> <span class="n">descritive</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">group_vowels</span> <span class="o">=</span> <span class="n">group_vowels</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">to_syl</span> <span class="o">=</span> <span class="n">to_syl</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">no_space</span> <span class="o">=</span> <span class="n">no_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">explicit_space</span> <span class="o">=</span> <span class="n">explicit_space</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">space_symbol</span> <span class="o">=</span> <span class="n">space_symbol</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="kc">None</span>
 
     <span class="k">def</span> <span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">text</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]:</span>
@@ -436,6 +470,10 @@
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">no_space</span><span class="p">:</span>
             <span class="c1"># remove space which represents word serapater</span>
             <span class="n">phones</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">filter</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span> <span class="o">!=</span> <span class="s2">&quot; &quot;</span><span class="p">,</span> <span class="n">phones</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">explicit_space</span><span class="p">:</span>
+            <span class="c1"># replace space as explicit space symbol</span>
+            <span class="n">phones</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">s</span><span class="p">:</span> <span class="n">s</span> <span class="k">if</span> <span class="n">s</span> <span class="o">!=</span> <span class="s2">&quot; &quot;</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">space_symbol</span><span class="p">,</span> <span class="n">phones</span><span class="p">))</span>
         <span class="k">return</span> <span class="n">phones</span></div>
 
 
@@ -589,6 +627,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">pypinyin_g2p</span>
         <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;pypinyin_g2p_phone&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">pypinyin_g2p_phone</span>
+        <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;pypinyin_g2p_phone_without_prosody&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">pypinyin_g2p_phone_without_prosody</span>
         <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;espeak_ng_arabic&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">Phonemizer</span><span class="p">(</span>
                 <span class="n">language</span><span class="o">=</span><span class="s2">&quot;ar&quot;</span><span class="p">,</span>
@@ -659,10 +699,26 @@
                 <span class="n">with_stress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
                 <span class="n">preserve_punctuation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
             <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;espeak_ng_italian&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">Phonemizer</span><span class="p">(</span>
+                <span class="n">language</span><span class="o">=</span><span class="s2">&quot;it&quot;</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;espeak&quot;</span><span class="p">,</span>
+                <span class="n">with_stress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">preserve_punctuation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;espeak_ng_polish&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">Phonemizer</span><span class="p">(</span>
+                <span class="n">language</span><span class="o">=</span><span class="s2">&quot;pl&quot;</span><span class="p">,</span>
+                <span class="n">backend</span><span class="o">=</span><span class="s2">&quot;espeak&quot;</span><span class="p">,</span>
+                <span class="n">with_stress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                <span class="n">preserve_punctuation</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="p">)</span>
         <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;g2pk&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">G2pk</span><span class="p">(</span><span class="n">no_space</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;g2pk_no_space&quot;</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">G2pk</span><span class="p">(</span><span class="n">no_space</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;g2pk_explicit_space&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">g2p</span> <span class="o">=</span> <span class="n">G2pk</span><span class="p">(</span><span class="n">explicit_space</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">space_symbol</span><span class="o">=</span><span class="n">space_symbol</span><span class="p">)</span>
         <span class="k">elif</span> <span class="n">g2p_type</span> <span class="o">==</span> <span class="s2">&quot;espeak_ng_english_us_vits&quot;</span><span class="p">:</span>
             <span class="c1"># VITS official implementation-like processing</span>
             <span class="c1"># Reference: https://github.com/jaywalnut310/vits</span>
