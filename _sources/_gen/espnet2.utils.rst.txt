@@ -4,28 +4,6 @@ espnet2.utils package
 
 
 
-.. _espnet2.utils.build_dataclass:
-
-espnet2.utils.build_dataclass
------------------------------
-
-.. automodule:: espnet2.utils.build_dataclass
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
-.. _espnet2.utils.get_default_kwargs:
-
-espnet2.utils.get_default_kwargs
---------------------------------
-
-.. automodule:: espnet2.utils.get_default_kwargs
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 .. _espnet2.utils.kwargs2args:
 
 espnet2.utils.kwargs2args
@@ -48,23 +26,23 @@ espnet2.utils.config_argparse
     :show-inheritance:
 
 
-.. _espnet2.utils.types:
-
-espnet2.utils.types
--------------------
-
-.. automodule:: espnet2.utils.types
-    :members:
-    :undoc-members:
-    :show-inheritance:
-
-
 .. _espnet2.utils.sized_dict:
 
 espnet2.utils.sized_dict
 ------------------------
 
 .. automodule:: espnet2.utils.sized_dict
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.utils.types:
+
+espnet2.utils.types
+-------------------
+
+.. automodule:: espnet2.utils.types
     :members:
     :undoc-members:
     :show-inheritance:
@@ -98,6 +76,28 @@ espnet2.utils.griffin_lim
 -------------------------
 
 .. automodule:: espnet2.utils.griffin_lim
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.utils.build_dataclass:
+
+espnet2.utils.build_dataclass
+-----------------------------
+
+.. automodule:: espnet2.utils.build_dataclass
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+.. _espnet2.utils.get_default_kwargs:
+
+espnet2.utils.get_default_kwargs
+--------------------------------
+
+.. automodule:: espnet2.utils.get_default_kwargs
     :members:
     :undoc-members:
     :show-inheritance:
